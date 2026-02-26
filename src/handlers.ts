@@ -3,8 +3,8 @@ import { getHistory, saveHistory } from './conversations.js';
 import { DEFAULT_MODEL, MODELS } from './models.js';
 import type {
   AnalyzeImageArgs,
+  CodeReviewArgs,
   ConversationMessage,
-  CountTokensArgs,
   GenerateTextArgs,
   ToolHandler,
   ToolResult,
@@ -79,32 +79,52 @@ export function createHandlers(genAI: GoogleGenAI): Record<string, ToolHandler> 
   }
 
   async function handleAnalyzeImage(args: Record<string, unknown>): Promise<ToolResult> {
-    const { prompt, imageBase64, model = DEFAULT_MODEL } = args as unknown as AnalyzeImageArgs;
-    const inlineData = parseImageData(imageBase64);
+    const { prompt, imageBase64, imageUrl, model = DEFAULT_MODEL } = args as unknown as AnalyzeImageArgs;
+
+    if (!imageBase64 && !imageUrl) {
+      return { ok: false, code: -32602, message: 'Either imageBase64 or imageUrl must be provided' };
+    }
+
+    const imagePart = imageBase64
+      ? { inlineData: parseImageData(imageBase64) }
+      : // biome-ignore lint/style/noNonNullAssertion: guard above ensures imageUrl is defined when imageBase64 is absent
+        { fileData: { fileUri: imageUrl!, mimeType: 'image/jpeg' } };
+
     const result = await genAI.models.generateContent({
       model,
-      contents: [{ role: 'user', parts: [{ text: prompt }, { inlineData }] }],
+      contents: [{ role: 'user', parts: [{ text: prompt }, imagePart] }],
     });
     return { ok: true, text: result.text ?? '' };
-  }
-
-  async function handleCountTokens(args: Record<string, unknown>): Promise<ToolResult> {
-    const { text, model = DEFAULT_MODEL } = args as unknown as CountTokensArgs;
-    const result = await genAI.models.countTokens({
-      model,
-      contents: [{ role: 'user', parts: [{ text }] }],
-    });
-    return { ok: true, text: `Token count: ${result.totalTokens}` };
   }
 
   function handleListModels(): Promise<ToolResult> {
     return Promise.resolve({ ok: true, text: MODELS.join('\n') });
   }
 
+  async function handleCodeReview(args: Record<string, unknown>): Promise<ToolResult> {
+    const { diff, context, model = DEFAULT_MODEL } = args as unknown as CodeReviewArgs;
+
+    const baseInstruction =
+      'You are an expert code reviewer. Review the following diff for bugs, style issues, security concerns, and potential improvements. Be concise and actionable.';
+    const systemInstruction = context ? `${baseInstruction}\n\nAdditional context: ${context}` : baseInstruction;
+
+    const result = await genAI.models.generateContent({
+      model,
+      contents: [{ role: 'user', parts: [{ text: diff }] }],
+      config: {
+        temperature: 0.3,
+        maxOutputTokens: 4096,
+        systemInstruction: { parts: [{ text: systemInstruction }] },
+      },
+    });
+
+    return { ok: true, text: result.text ?? '' };
+  }
+
   return {
     generate_text: handleGenerateText,
     analyze_image: handleAnalyzeImage,
-    count_tokens: handleCountTokens,
     list_models: handleListModels,
+    code_review: handleCodeReview,
   };
 }

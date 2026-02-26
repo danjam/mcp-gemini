@@ -52,32 +52,34 @@ export const tools = [
   },
   {
     name: 'analyze_image',
-    description: 'Analyze an image using Gemini vision',
+    description: 'Analyze an image using Gemini vision. Provide either imageUrl or imageBase64.',
     inputSchema: {
       type: 'object',
       properties: {
         prompt: { type: 'string', description: 'Question about the image' },
+        imageUrl: { type: 'string', description: 'URL of the image to analyze' },
         imageBase64: { type: 'string', description: 'Base64-encoded image (with or without data URI prefix)' },
         model: modelSchemaProperty,
       },
-      required: ['prompt', 'imageBase64'],
-    },
-  },
-  {
-    name: 'count_tokens',
-    description: 'Count tokens for a given text',
-    inputSchema: {
-      type: 'object',
-      properties: {
-        text: { type: 'string', description: 'Text to count tokens for' },
-        model: modelSchemaProperty,
-      },
-      required: ['text'],
+      required: ['prompt'],
     },
   },
   {
     name: 'list_models',
     description: 'List available Gemini models',
     inputSchema: { type: 'object', properties: {} },
+  },
+  {
+    name: 'code_review',
+    description: 'Review a code diff using Gemini. Returns feedback on bugs, style, and improvements.',
+    inputSchema: {
+      type: 'object',
+      properties: {
+        diff: { type: 'string', description: 'The code diff or code to review' },
+        context: { type: 'string', description: 'Optional context or focus areas (e.g. "focus on security")' },
+        model: modelSchemaProperty,
+      },
+      required: ['diff'],
+    },
   },
 ] satisfies MCPToolDefinition[];

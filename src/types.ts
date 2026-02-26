@@ -35,12 +35,14 @@ export interface GenerateTextArgs {
 
 export interface AnalyzeImageArgs {
   prompt: string;
-  imageBase64: string;
+  imageBase64?: string;
+  imageUrl?: string;
   model?: string;
 }
 
-export interface CountTokensArgs {
-  text: string;
+export interface CodeReviewArgs {
+  diff: string;
+  context?: string;
   model?: string;
 }
 
