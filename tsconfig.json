@@ -6,6 +6,9 @@
     "outDir": "./dist",
     "rootDir": "./src",
     "strict": true,
+    "verbatimModuleSyntax": true,
+    "noUncheckedIndexedAccess": true,
+    "noFallthroughCasesInSwitch": true,
     "esModuleInterop": true,
     "skipLibCheck": true,
     "types": ["node"]

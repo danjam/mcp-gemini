@@ -1,41 +1,44 @@
-import type { GenerateContentConfig } from '@google/genai';
-
-import { MODELS, DEFAULT_MODEL, DEFAULT_EMBEDDING_MODEL } from './models.js';
+import type { GenerateContentConfig, GoogleGenAI } from '@google/genai';
 import { getHistory, saveHistory } from './conversations.js';
-import type { ConversationMessage, RequestId, Responder, ToolHandler } from './types.js';
+import { DEFAULT_EMBEDDING_MODEL, DEFAULT_MODEL, MODELS } from './models.js';
+import type {
+  AnalyzeImageArgs,
+  ConversationMessage,
+  CountTokensArgs,
+  EmbedTextArgs,
+  GenerateTextArgs,
+  ToolHandler,
+  ToolResult,
+} from './types.js';
 
 const DATA_URI_PATTERN = /^data:(.+);base64,(.+)$/;
 
-function parseImageData(imageBase64: string): { mimeType: string; data: string } {
+export function parseImageData(imageBase64: string): { mimeType: string; data: string } {
   const match = imageBase64.match(DATA_URI_PATTERN);
   if (match) {
-    return { mimeType: match[1], data: match[2] };
+    // biome-ignore lint/style/noNonNullAssertion: regex capture groups guaranteed by DATA_URI_PATTERN
+    return { mimeType: match[1]!, data: match[2]! };
   }
   return { mimeType: 'image/jpeg', data: imageBase64 };
 }
 
-export function createHandlers(
-  genAI: { models: any },
-  responder: Responder,
-): Record<string, ToolHandler> {
-  const { textReply, error } = responder;
+export function createHandlers(genAI: GoogleGenAI): Record<string, ToolHandler> {
+  async function handleGenerateText(args: Record<string, unknown>): Promise<ToolResult> {
+    const { prompt, conversationId, systemInstruction, jsonMode, jsonSchema, grounding, safetySettings } =
+      args as unknown as GenerateTextArgs;
+    const model = (args.model as string | undefined) ?? DEFAULT_MODEL;
 
-  async function handleGenerateText(id: RequestId, args: Record<string, any>): Promise<void> {
-    const model = args.model ?? DEFAULT_MODEL;
-
-    const temperature = args.temperature ?? 0.7;
+    const temperature = (args.temperature as number | undefined) ?? 0.7;
     if (typeof temperature !== 'number' || temperature < 0 || temperature > 2) {
-      error(id, -32602, 'Invalid temperature: must be a number between 0 and 2');
-      return;
+      return { ok: false, code: -32602, message: 'Invalid temperature: must be a number between 0 and 2' };
     }
-    const maxTokens = args.maxTokens ?? 2048;
+    const maxTokens = (args.maxTokens as number | undefined) ?? 2048;
     if (typeof maxTokens !== 'number' || maxTokens < 1 || !Number.isInteger(maxTokens)) {
-      error(id, -32602, 'Invalid maxTokens: must be a positive integer');
-      return;
+      return { ok: false, code: -32602, message: 'Invalid maxTokens: must be a positive integer' };
     }
 
-    const userMessage: ConversationMessage = { role: 'user', parts: [{ text: args.prompt }] };
-    const history = args.conversationId ? getHistory(args.conversationId) : [];
+    const userMessage: ConversationMessage = { role: 'user', parts: [{ text: prompt }] };
+    const history = conversationId ? getHistory(conversationId) : [];
     const contents = [...history, userMessage];
 
     const config: GenerateContentConfig = {
@@ -43,61 +46,63 @@ export function createHandlers(
       maxOutputTokens: maxTokens,
     };
 
-    if (args.systemInstruction) {
-      config.systemInstruction = { parts: [{ text: args.systemInstruction }] };
+    if (systemInstruction) {
+      config.systemInstruction = { parts: [{ text: systemInstruction }] };
     }
-    if (args.jsonMode) {
+    if (jsonMode) {
       config.responseMimeType = 'application/json';
-      if (args.jsonSchema) {
-        config.responseSchema = args.jsonSchema;
+      if (jsonSchema) {
+        config.responseSchema = jsonSchema;
       }
     }
-    if (args.grounding) {
+    if (grounding) {
       config.tools = [{ googleSearch: {} }];
     }
-    if (args.safetySettings) {
-      config.safetySettings = args.safetySettings;
+    if (safetySettings) {
+      config.safetySettings = safetySettings;
     }
 
     const result = await genAI.models.generateContent({ model, contents, config });
     const text = result.text ?? '';
 
-    if (args.conversationId) {
-      saveHistory(args.conversationId, [...history, userMessage, { role: 'model', parts: [{ text }] }]);
+    if (conversationId) {
+      saveHistory(conversationId, [...history, userMessage, { role: 'model', parts: [{ text }] }]);
     }
 
-    textReply(id, text);
+    return { ok: true, text };
   }
 
-  async function handleAnalyzeImage(id: RequestId, args: Record<string, any>): Promise<void> {
-    const model = args.model ?? DEFAULT_MODEL;
-    const inlineData = parseImageData(args.imageBase64);
+  async function handleAnalyzeImage(args: Record<string, unknown>): Promise<ToolResult> {
+    const { prompt, imageBase64 } = args as unknown as AnalyzeImageArgs;
+    const model = (args.model as string | undefined) ?? DEFAULT_MODEL;
+    const inlineData = parseImageData(imageBase64);
     const result = await genAI.models.generateContent({
       model,
-      contents: [{ role: 'user', parts: [{ text: args.prompt }, { inlineData }] }],
+      contents: [{ role: 'user', parts: [{ text: prompt }, { inlineData }] }],
     });
-    textReply(id, result.text ?? '');
+    return { ok: true, text: result.text ?? '' };
   }
 
-  async function handleCountTokens(id: RequestId, args: Record<string, any>): Promise<void> {
-    const model = args.model ?? DEFAULT_MODEL;
+  async function handleCountTokens(args: Record<string, unknown>): Promise<ToolResult> {
+    const { text } = args as unknown as CountTokensArgs;
+    const model = (args.model as string | undefined) ?? DEFAULT_MODEL;
     const result = await genAI.models.countTokens({
       model,
-      contents: [{ role: 'user', parts: [{ text: args.text }] }],
+      contents: [{ role: 'user', parts: [{ text }] }],
     });
-    textReply(id, `Token count: ${result.totalTokens}`);
+    return { ok: true, text: `Token count: ${result.totalTokens}` };
   }
 
-  function handleListModels(id: RequestId): Promise<void> {
-    textReply(id, MODELS.join('\n'));
-    return Promise.resolve();
+  function handleListModels(): Promise<ToolResult> {
+    return Promise.resolve({ ok: true, text: MODELS.join('\n') });
   }
 
-  async function handleEmbedText(id: RequestId, args: Record<string, any>): Promise<void> {
-    const model = args.model ?? DEFAULT_EMBEDDING_MODEL;
-    const result = await genAI.models.embedContent({ model, contents: args.text });
+  async function handleEmbedText(args: Record<string, unknown>): Promise<ToolResult> {
+    const { text } = args as unknown as EmbedTextArgs;
+    const model = (args.model as string | undefined) ?? DEFAULT_EMBEDDING_MODEL;
+    const result = await genAI.models.embedContent({ model, contents: text });
     const values = result.embeddings?.[0]?.values ?? [];
-    textReply(id, JSON.stringify({ model, dimensions: values.length, embedding: values }));
+    return { ok: true, text: JSON.stringify({ model, dimensions: values.length, embedding: values }) };
   }
 
   return {

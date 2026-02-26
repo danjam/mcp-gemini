@@ -1,6 +1,6 @@
 // Last updated: 2026-02-26
 
-import type { GeminiModel, EmbeddingModel } from './types.js';
+import type { EmbeddingModel, GeminiModel } from './types.js';
 
 export const MODELS = [
   'gemini-pro-latest',
@@ -17,13 +17,10 @@ export const MODELS = [
   'gemini-2.5-flash-live-native-audio',
 ] as const;
 
-const FALLBACK_MODEL: GeminiModel = 'gemini-2.5-flash';
+const FALLBACK_MODEL: GeminiModel = 'gemini-flash-latest';
 
 export const DEFAULT_MODEL: string = process.env.GEMINI_DEFAULT_MODEL ?? FALLBACK_MODEL;
 
-export const EMBEDDING_MODELS = [
-  'text-embedding-004',
-  'text-multilingual-embedding-002',
-] as const;
+export const EMBEDDING_MODELS = ['text-embedding-004', 'text-multilingual-embedding-002'] as const;
 
 export const DEFAULT_EMBEDDING_MODEL: EmbeddingModel = 'text-embedding-004';

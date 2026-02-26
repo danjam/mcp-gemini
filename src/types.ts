@@ -1,4 +1,6 @@
-import type { MODELS, EMBEDDING_MODELS } from './models.js';
+import type { SafetySetting } from '@google/genai';
+
+import type { EMBEDDING_MODELS, MODELS } from './models.js';
 
 export type GeminiModel = (typeof MODELS)[number];
 
@@ -16,18 +18,54 @@ export interface Conversation {
   lastAccess: number;
 }
 
-export interface Responder {
-  textReply: (id: RequestId, text: string) => void;
-  error: (id: RequestId, code: number, message: string) => void;
+export type ToolResult = { ok: true; text: string } | { ok: false; code: number; message: string };
+
+export type ToolHandler = (args: Record<string, unknown>) => Promise<ToolResult>;
+
+export interface GenerateTextArgs {
+  prompt: string;
+  model?: string;
+  systemInstruction?: string;
+  temperature?: number;
+  maxTokens?: number;
+  jsonMode?: boolean;
+  jsonSchema?: object;
+  grounding?: boolean;
+  conversationId?: string;
+  safetySettings?: SafetySetting[];
 }
 
-export type ToolHandler = (id: RequestId, args: Record<string, any>) => Promise<void>;
+export interface AnalyzeImageArgs {
+  prompt: string;
+  imageBase64: string;
+  model?: string;
+}
+
+export interface CountTokensArgs {
+  text: string;
+  model?: string;
+}
+
+export interface EmbedTextArgs {
+  text: string;
+  model?: string;
+}
+
+export interface MCPToolDefinition {
+  name: string;
+  description: string;
+  inputSchema: {
+    type: 'object';
+    properties: Record<string, unknown>;
+    required?: string[];
+  };
+}
 
 export interface MCPRequest {
   jsonrpc: '2.0';
   id?: RequestId;
   method: string;
-  params?: Record<string, any>;
+  params?: Record<string, unknown>;
 }
 
 export interface MCPResponse {

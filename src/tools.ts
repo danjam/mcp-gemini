@@ -1,4 +1,5 @@
-import { MODELS, DEFAULT_MODEL, EMBEDDING_MODELS, DEFAULT_EMBEDDING_MODEL } from './models.js';
+import { DEFAULT_EMBEDDING_MODEL, DEFAULT_MODEL, EMBEDDING_MODELS, MODELS } from './models.js';
+import type { MCPToolDefinition } from './types.js';
 
 const modelSchemaProperty = {
   type: 'string',
@@ -38,7 +39,12 @@ export const tools = [
             properties: {
               category: {
                 type: 'string',
-                enum: ['HARM_CATEGORY_HARASSMENT', 'HARM_CATEGORY_HATE_SPEECH', 'HARM_CATEGORY_SEXUALLY_EXPLICIT', 'HARM_CATEGORY_DANGEROUS_CONTENT'],
+                enum: [
+                  'HARM_CATEGORY_HARASSMENT',
+                  'HARM_CATEGORY_HATE_SPEECH',
+                  'HARM_CATEGORY_SEXUALLY_EXPLICIT',
+                  'HARM_CATEGORY_DANGEROUS_CONTENT',
+                ],
               },
               threshold: {
                 type: 'string',
@@ -93,4 +99,4 @@ export const tools = [
       required: ['text'],
     },
   },
-];
+] satisfies MCPToolDefinition[];

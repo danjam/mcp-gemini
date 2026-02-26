@@ -1,6 +1,6 @@
 #!/usr/bin/env node
+import { createInterface } from 'node:readline';
 import { GoogleGenAI } from '@google/genai';
-import { createInterface } from 'readline';
 
 import { createHandlers } from './handlers.js';
 import { tools } from './tools.js';
@@ -15,7 +15,7 @@ if (!apiKey) {
 const genAI = new GoogleGenAI({ apiKey });
 
 function send(msg: MCPResponse): void {
-  process.stdout.write(JSON.stringify(msg) + '\n');
+  process.stdout.write(`${JSON.stringify(msg)}\n`);
 }
 
 function reply(id: RequestId, result: unknown): void {
@@ -30,16 +30,21 @@ function error(id: RequestId, code: number, message: string): void {
   send({ jsonrpc: '2.0', id, error: { code, message } });
 }
 
-const handlers = createHandlers(genAI, { textReply, error });
+const handlers = createHandlers(genAI);
 
-async function handleToolCall(id: RequestId, name: string, args: Record<string, any>): Promise<void> {
+async function handleToolCall(id: RequestId, name: string, args: Record<string, unknown>): Promise<void> {
   const handler = handlers[name];
   if (!handler) {
     error(id, -32601, `Unknown tool: ${name}`);
     return;
   }
   try {
-    await handler(id, args);
+    const result = await handler(args);
+    if (result.ok) {
+      textReply(id, result.text);
+    } else {
+      error(id, result.code, result.message);
+    }
   } catch (e) {
     error(id, -32603, e instanceof Error ? e.message : 'Internal error');
   }
@@ -61,9 +66,7 @@ function handleRequest(req: MCPRequest): void {
       reply(id, { tools });
       break;
     case 'tools/call':
-      handleToolCall(id, req.params?.name, req.params?.arguments ?? {}).catch((e) => {
-        error(id, -32603, e instanceof Error ? e.message : 'Internal error');
-      });
+      handleToolCall(id, req.params?.name as string, (req.params?.arguments ?? {}) as Record<string, unknown>);
       break;
     default:
       error(id, -32601, 'Method not found');
