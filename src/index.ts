@@ -51,7 +51,7 @@ async function handleToolCall(id: RequestId, name: string, args: Record<string, 
 }
 
 function handleRequest(req: MCPRequest): void {
-  if (req.id === undefined || req.id === null) return;
+  if (req.id == null) return;
   const id = req.id;
 
   switch (req.method) {
