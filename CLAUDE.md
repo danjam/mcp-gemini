@@ -42,11 +42,11 @@ This is a **Model Context Protocol (MCP) server** that wraps Google Gemini's API
 - `src/tools.ts` — Tool schema definitions (static JSON Schema data for MCP `tools/list`)
 - `src/conversations.ts` — Conversation store with TTL pruning (30min expiry, max 100 conversations)
 - `src/models.ts` — Model lists, defaults, `GEMINI_DEFAULT_MODEL` env var override
-- `src/types.ts` — All type definitions: `RequestId`, `ToolResult`, `ToolHandler`, typed arg interfaces, MCP interfaces
+- `src/types.ts` — All type definitions: `RequestId`, `ToolResult`, `ToolHandler`, tool arg interfaces, MCP interfaces
 
 **Request flow:** stdin line → JSON parse → `handleRequest` dispatches by MCP method (`initialize`, `tools/list`, `tools/call`) → `handleToolCall` looks up handler in map → handler returns `ToolResult` → dispatch maps result to JSON-RPC response on stdout.
 
-**Tools exposed:** `generate_text`, `analyze_image`, `count_tokens`, `list_models`, `embed_text`.
+**Tools exposed:** `generate_text`, `analyze_image`, `count_tokens`, `list_models`.
 
 **Conversation state:** Multi-turn conversations are tracked in-memory via `getHistory`/`saveHistory` in `conversations.ts`, keyed by `conversationId`. Conversations expire after 30 minutes of inactivity, with a hard cap of 100 concurrent conversations.
 
@@ -62,3 +62,4 @@ This is a **Model Context Protocol (MCP) server** that wraps Google Gemini's API
 ## Gotchas
 
 - **Import extensions**: NodeNext module resolution requires `.js` extensions in imports (e.g., `import { MCPRequest } from './types.js'`), even though source files are `.ts`.
+- **Tests are plain JS**: Test files in `test/` are `.js` and import from `../dist/`. Run `npm run build` first (or use `npm test` which builds automatically).

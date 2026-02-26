@@ -107,17 +107,6 @@ Check how many tokens a piece of text uses. Useful for staying within model limi
 
 See all available Gemini models. No parameters needed.
 
-### Generate Embeddings
-
-Convert text into a numerical vector. Useful for building search, finding similar content, or clustering text.
-
-| Parameter | Required | Description |
-|-----------|----------|-------------|
-| `text` | Yes | The text to convert |
-| `model` | No | Which embedding model to use |
-
-**Embedding models:** `text-embedding-004` (default), `text-multilingual-embedding-002`
-
 ## Conversations
 
 You can have multi-turn conversations where Gemini remembers what was said before. Pass the same `conversationId` across multiple `generate_text` calls:
@@ -136,15 +125,11 @@ Conversations expire after 30 minutes of inactivity.
 | `gemini-pro-latest` | Highest capability (currently points to 3.1 Pro) |
 | `gemini-flash-latest` | Fast and capable (currently points to 3 Flash) |
 | `gemini-3.1-pro-preview` | State-of-the-art reasoning |
-| `gemini-3.1-flash-image` | Image generation and editing |
 | `gemini-3-pro-preview` | Advanced multimodal reasoning |
 | `gemini-3-flash-preview` | Fast multimodal reasoning |
-| `gemini-3-deep-think` | Math, STEM, and research tasks |
-| `nano-banana-pro` | Native image generation |
 | `gemini-2.5-pro` | Complex reasoning, code, large context |
 | `gemini-2.5-flash` | Fast general-purpose (default) |
 | `gemini-2.5-flash-lite` | Lightweight, high-throughput tasks |
-| `gemini-2.5-flash-live-native-audio` | Real-time voice and audio |
 
 You can also pass any model name not on this list — the server will forward it to the Gemini API directly.
 

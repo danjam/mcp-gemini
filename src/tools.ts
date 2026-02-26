@@ -1,4 +1,4 @@
-import { DEFAULT_EMBEDDING_MODEL, DEFAULT_MODEL, EMBEDDING_MODELS, MODELS } from './models.js';
+import { DEFAULT_MODEL, MODELS } from './models.js';
 import type { MCPToolDefinition } from './types.js';
 
 const modelSchemaProperty = {
@@ -6,13 +6,6 @@ const modelSchemaProperty = {
   description: 'Model to use',
   enum: MODELS,
   default: DEFAULT_MODEL,
-} as const;
-
-const embeddingModelSchemaProperty = {
-  type: 'string',
-  description: 'Embedding model to use',
-  enum: EMBEDDING_MODELS,
-  default: DEFAULT_EMBEDDING_MODEL,
 } as const;
 
 export const tools = [
@@ -86,17 +79,5 @@ export const tools = [
     name: 'list_models',
     description: 'List available Gemini models',
     inputSchema: { type: 'object', properties: {} },
-  },
-  {
-    name: 'embed_text',
-    description: 'Generate text embeddings',
-    inputSchema: {
-      type: 'object',
-      properties: {
-        text: { type: 'string', description: 'Text to embed' },
-        model: embeddingModelSchemaProperty,
-      },
-      required: ['text'],
-    },
   },
 ] satisfies MCPToolDefinition[];

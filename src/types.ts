@@ -1,10 +1,8 @@
 import type { SafetySetting } from '@google/genai';
 
-import type { EMBEDDING_MODELS, MODELS } from './models.js';
+import type { MODELS } from './models.js';
 
 export type GeminiModel = (typeof MODELS)[number];
-
-export type EmbeddingModel = (typeof EMBEDDING_MODELS)[number];
 
 export type RequestId = string | number;
 
@@ -42,11 +40,6 @@ export interface AnalyzeImageArgs {
 }
 
 export interface CountTokensArgs {
-  text: string;
-  model?: string;
-}
-
-export interface EmbedTextArgs {
   text: string;
   model?: string;
 }
