@@ -10,13 +10,20 @@ npm run build    # Compile TypeScript (tsc)
 npm start        # Run server (node dist/index.js)
 ```
 
-No test framework or linter is configured.
+Unit tests via `node:test` (built-in), linting via [Biome](https://biomejs.dev/):
+
+```bash
+npm test            # Build + run tests
+npm run test:only   # Run tests without rebuilding
+npm run lint        # Check for issues
+npm run lint:fix    # Auto-fix issues
+```
 
 ## Environment
 
 Requires `GEMINI_API_KEY` env var. Create a `.env` file or export it directly.
 
-Optional: `GEMINI_DEFAULT_MODEL` overrides the default model (falls back to `gemini-2.5-flash`).
+Optional: `GEMINI_DEFAULT_MODEL` overrides the default model (falls back to `gemini-flash-latest`).
 
 ## Manual Testing
 
@@ -35,9 +42,9 @@ This is a **Model Context Protocol (MCP) server** that wraps Google Gemini's API
 - `src/tools.ts` — Tool schema definitions (static JSON Schema data for MCP `tools/list`)
 - `src/conversations.ts` — Conversation store with TTL pruning (30min expiry, max 100 conversations)
 - `src/models.ts` — Model lists, defaults, `GEMINI_DEFAULT_MODEL` env var override
-- `src/types.ts` — All type definitions: `RequestId`, `Responder`, `ToolHandler`, `Conversation`, MCP interfaces
+- `src/types.ts` — All type definitions: `RequestId`, `ToolResult`, `ToolHandler`, typed arg interfaces, MCP interfaces
 
-**Request flow:** stdin line → JSON parse → `handleRequest` dispatches by MCP method (`initialize`, `tools/list`, `tools/call`) → `handleToolCall` looks up handler in map → handler executes → JSON-RPC response written to stdout.
+**Request flow:** stdin line → JSON parse → `handleRequest` dispatches by MCP method (`initialize`, `tools/list`, `tools/call`) → `handleToolCall` looks up handler in map → handler returns `ToolResult` → dispatch maps result to JSON-RPC response on stdout.
 
 **Tools exposed:** `generate_text`, `analyze_image`, `count_tokens`, `list_models`, `embed_text`.
 
@@ -48,7 +55,7 @@ This is a **Model Context Protocol (MCP) server** that wraps Google Gemini's API
 ## Project Config
 
 - ES modules (`"type": "module"` in package.json)
-- TypeScript strict mode, target ES2022, module NodeNext
+- TypeScript strict mode (`verbatimModuleSyntax`, `noUncheckedIndexedAccess`, `noFallthroughCasesInSwitch`), target ES2022, module NodeNext
 - Output to `dist/`, source in `src/`
 - Executable as CLI via shebang (`#!/usr/bin/env node`)
 
