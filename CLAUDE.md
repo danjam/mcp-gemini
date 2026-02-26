@@ -46,7 +46,7 @@ This is a **Model Context Protocol (MCP) server** that wraps Google Gemini's API
 
 **Request flow:** stdin line → JSON parse → `handleRequest` dispatches by MCP method (`initialize`, `tools/list`, `tools/call`) → `handleToolCall` looks up handler in map → handler returns `ToolResult` → dispatch maps result to JSON-RPC response on stdout.
 
-**Tools exposed:** `generate_text`, `analyze_image`, `count_tokens`, `list_models`.
+**Tools exposed:** `generate_text`, `analyze_image`, `list_models`, `code_review`.
 
 **Conversation state:** Multi-turn conversations are tracked in-memory via `getHistory`/`saveHistory` in `conversations.ts`, keyed by `conversationId`. Conversations expire after 30 minutes of inactivity, with a hard cap of 100 concurrent conversations.
 

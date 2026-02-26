@@ -86,26 +86,28 @@ Ask Gemini to write, answer questions, summarize, translate, or anything else te
 
 ### Analyze Images
 
-Send an image and ask questions about it — describe what's in a photo, read text from a screenshot, identify objects, and more.
+Send an image and ask questions about it — describe what's in a photo, read text from a screenshot, identify objects, and more. Provide either `imageUrl` or `imageBase64`.
 
 | Parameter | Required | Description |
 |-----------|----------|-------------|
 | `prompt` | Yes | Your question about the image |
-| `imageBase64` | Yes | The image as a base64-encoded string |
+| `imageUrl` | No | URL of the image to analyze |
+| `imageBase64` | No | Base64-encoded image (with or without data URI prefix) |
 | `model` | No | Which model to use |
-
-### Count Tokens
-
-Check how many tokens a piece of text uses. Useful for staying within model limits.
-
-| Parameter | Required | Description |
-|-----------|----------|-------------|
-| `text` | Yes | The text to measure |
-| `model` | No | Which model's tokenizer to use |
 
 ### List Models
 
 See all available Gemini models. No parameters needed.
+
+### Code Review
+
+Review a code diff for bugs, style issues, security concerns, and improvements. Uses low temperature (0.3) for focused, consistent feedback.
+
+| Parameter | Required | Description |
+|-----------|----------|-------------|
+| `diff` | Yes | The code diff or code to review |
+| `context` | No | Focus areas or additional context (e.g. "focus on security") |
+| `model` | No | Which model to use |
 
 ## Conversations
 
