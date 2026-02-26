@@ -109,6 +109,8 @@ Review a code diff for bugs, style issues, security concerns, and improvements. 
 | `context` | No | Focus areas or additional context (e.g. "focus on security") |
 | `model` | No | Which model to use |
 
+**Note:** Use `list_models` to see available models, or pass any model name directly. Pro models aren't available on the free tier — if you see a quota error, switch to a Flash model or upgrade your plan.
+
 ## Conversations
 
 You can have multi-turn conversations where Gemini remembers what was said before. Pass the same `conversationId` across multiple `generate_text` calls:
@@ -119,12 +121,6 @@ You can have multi-turn conversations where Gemini remembers what was said befor
 Gemini will remember the first message when answering the follow-up.
 
 Conversations expire after 30 minutes of inactivity.
-
-## Available Models
-
-Use the `list_models` tool to see available models. You can also pass any model name directly — the server will forward it to the Gemini API.
-
-**Note:** Pro models are not available on the free Gemini API plan. If you see a quota error, switch to a Flash model or upgrade your plan.
 
 ## License
 

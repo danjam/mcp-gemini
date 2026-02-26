@@ -29,7 +29,7 @@ Optional: `GEMINI_DEFAULT_MODEL` overrides the default model (falls back to `gem
 
 Pipe JSON-RPC messages to stdin:
 ```bash
-echo '{"jsonrpc":"2.0","id":1,"method":"initialize"}' | GEMINI_API_KEY=your-key node dist/index.js
+printf '{"jsonrpc":"2.0","id":1,"method":"initialize"}\n{"jsonrpc":"2.0","id":2,"method":"tools/call","params":{"name":"generate_text","arguments":{"prompt":"Say hello"}}}\n' | GEMINI_API_KEY=your-key node dist/index.js
 ```
 
 ## Architecture
