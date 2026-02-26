@@ -19,7 +19,7 @@ Add the server to your MCP client's configuration. There are two ways to do this
   "mcpServers": {
     "gemini": {
       "command": "npx",
-      "args": ["github:danjam/mcp-gemini"],
+      "args": ["-y", "github:danjam/mcp-gemini"],
       "env": {
         "GEMINI_API_KEY": "your-api-key-here"
       }
@@ -56,7 +56,7 @@ Replace `/path/to/mcp-gemini` with the actual path where you cloned the project.
 
 ### Changing the Default Model
 
-By default, the server uses `gemini-2.5-flash`. To change this, add `GEMINI_DEFAULT_MODEL` to your environment:
+By default, the server uses `gemini-flash-latest`. To change this, add `GEMINI_DEFAULT_MODEL` to your environment:
 
 ```json
 "env": {
@@ -122,20 +122,9 @@ Conversations expire after 30 minutes of inactivity.
 
 ## Available Models
 
-| Model | Best For |
-|-------|----------|
-| `gemini-pro-latest` | Highest capability (currently points to 3.1 Pro) |
-| `gemini-flash-latest` | Fast and capable (currently points to 3 Flash) |
-| `gemini-3.1-pro-preview` | State-of-the-art reasoning |
-| `gemini-3-pro-preview` | Advanced multimodal reasoning |
-| `gemini-3-flash-preview` | Fast multimodal reasoning |
-| `gemini-2.5-pro` | Complex reasoning, code, large context |
-| `gemini-2.5-flash` | Fast general-purpose (default) |
-| `gemini-2.5-flash-lite` | Lightweight, high-throughput tasks |
+Use the `list_models` tool to see available models. You can also pass any model name directly — the server will forward it to the Gemini API.
 
-You can also pass any model name not on this list — the server will forward it to the Gemini API directly.
-
-**Note:** Pro models are not available on the free Gemini API plan. If you see an error about usage limits being hit, this is normal — you'll need a paid plan to use them, or switch to a Flash model.
+**Note:** Pro models are not available on the free Gemini API plan. If you see a quota error, switch to a Flash model or upgrade your plan.
 
 ## License
 
