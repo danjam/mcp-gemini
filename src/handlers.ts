@@ -10,6 +10,14 @@ import type {
   ToolResult,
 } from './types.js';
 
+function ok(text: string): ToolResult {
+  return { ok: true, text };
+}
+
+function fail(message: string): ToolResult {
+  return { ok: false, message };
+}
+
 const DATA_URI_PATTERN = /^data:(.+);base64,(.+)$/;
 
 export function parseImageData(imageBase64: string): { mimeType: string; data: string } {
@@ -37,10 +45,10 @@ export function createHandlers(genAI: GoogleGenAI): Record<string, ToolHandler> 
     } = args as unknown as GenerateTextArgs;
 
     if (typeof temperature !== 'number' || temperature < 0 || temperature > 2) {
-      return { ok: false, code: -32602, message: 'Invalid temperature: must be a number between 0 and 2' };
+      return fail('Invalid temperature: must be a number between 0 and 2');
     }
     if (typeof maxTokens !== 'number' || maxTokens < 1 || !Number.isInteger(maxTokens)) {
-      return { ok: false, code: -32602, message: 'Invalid maxTokens: must be a positive integer' };
+      return fail('Invalid maxTokens: must be a positive integer');
     }
 
     const userMessage: ConversationMessage = { role: 'user', parts: [{ text: prompt }] };
@@ -75,14 +83,14 @@ export function createHandlers(genAI: GoogleGenAI): Record<string, ToolHandler> 
       saveHistory(conversationId, [...history, userMessage, { role: 'model', parts: [{ text }] }]);
     }
 
-    return { ok: true, text };
+    return ok(text);
   }
 
   async function handleAnalyzeImage(args: Record<string, unknown>): Promise<ToolResult> {
     const { prompt, imageBase64, imageUrl, model = DEFAULT_MODEL } = args as unknown as AnalyzeImageArgs;
 
     if (!imageBase64 && !imageUrl) {
-      return { ok: false, code: -32602, message: 'Either imageBase64 or imageUrl must be provided' };
+      return fail('Either imageBase64 or imageUrl must be provided');
     }
 
     const imagePart = imageBase64
@@ -94,11 +102,11 @@ export function createHandlers(genAI: GoogleGenAI): Record<string, ToolHandler> 
       model,
       contents: [{ role: 'user', parts: [{ text: prompt }, imagePart] }],
     });
-    return { ok: true, text: result.text ?? '' };
+    return ok(result.text ?? '');
   }
 
   function handleListModels(): Promise<ToolResult> {
-    return Promise.resolve({ ok: true, text: MODELS.join('\n') });
+    return Promise.resolve(ok(MODELS.join('\n')));
   }
 
   async function handleCodeReview(args: Record<string, unknown>): Promise<ToolResult> {
@@ -118,7 +126,7 @@ export function createHandlers(genAI: GoogleGenAI): Record<string, ToolHandler> 
       },
     });
 
-    return { ok: true, text: result.text ?? '' };
+    return ok(result.text ?? '');
   }
 
   return {

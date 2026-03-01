@@ -43,10 +43,10 @@ async function handleToolCall(id: RequestId, name: string, args: Record<string, 
     if (result.ok) {
       textReply(id, result.text);
     } else {
-      error(id, result.code, result.message);
+      reply(id, { content: [{ type: 'text', text: result.message }], isError: true });
     }
   } catch (e) {
-    error(id, -32603, e instanceof Error ? e.message : 'Internal error');
+    reply(id, { content: [{ type: 'text', text: e instanceof Error ? e.message : 'Internal error' }], isError: true });
   }
 }
 
@@ -66,7 +66,10 @@ function handleRequest(req: MCPRequest): void {
       reply(id, { tools });
       break;
     case 'tools/call':
-      handleToolCall(id, req.params?.name as string, (req.params?.arguments ?? {}) as Record<string, unknown>);
+      void handleToolCall(id, req.params?.name as string, (req.params?.arguments ?? {}) as Record<string, unknown>);
+      break;
+    case 'ping':
+      reply(id, {});
       break;
     default:
       error(id, -32601, 'Method not found');

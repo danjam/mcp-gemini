@@ -32,33 +32,33 @@ describe('handleGenerateText validation', () => {
   it('rejects temperature below 0', async () => {
     const result = await handlers.generate_text({ prompt: 'test', temperature: -1 });
     assert.equal(result.ok, false);
-    assert.equal(result.code, -32602);
+
     assert.match(result.message, /temperature/i);
   });
 
   it('rejects temperature above 2', async () => {
     const result = await handlers.generate_text({ prompt: 'test', temperature: 3 });
     assert.equal(result.ok, false);
-    assert.equal(result.code, -32602);
+
   });
 
   it('rejects non-integer maxTokens', async () => {
     const result = await handlers.generate_text({ prompt: 'test', maxTokens: 1.5 });
     assert.equal(result.ok, false);
-    assert.equal(result.code, -32602);
+
     assert.match(result.message, /maxTokens/i);
   });
 
   it('rejects maxTokens of 0', async () => {
     const result = await handlers.generate_text({ prompt: 'test', maxTokens: 0 });
     assert.equal(result.ok, false);
-    assert.equal(result.code, -32602);
+
   });
 
   it('rejects negative maxTokens', async () => {
     const result = await handlers.generate_text({ prompt: 'test', maxTokens: -10 });
     assert.equal(result.ok, false);
-    assert.equal(result.code, -32602);
+
   });
 });
 

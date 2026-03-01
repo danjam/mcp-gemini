@@ -16,7 +16,7 @@ export interface Conversation {
   lastAccess: number;
 }
 
-export type ToolResult = { ok: true; text: string } | { ok: false; code: number; message: string };
+export type ToolResult = { ok: true; text: string } | { ok: false; message: string };
 
 export type ToolHandler = (args: Record<string, unknown>) => Promise<ToolResult>;
 
