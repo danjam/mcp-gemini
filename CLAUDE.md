@@ -21,7 +21,7 @@ npm run lint:fix    # Auto-fix issues
 
 ## Environment
 
-Requires `GEMINI_API_KEY` env var. Create a `.env` file or export it directly.
+Requires `GEMINI_API_KEY` env var.
 
 Optional: `GEMINI_DEFAULT_MODEL` overrides the default model (falls back to `gemini-flash-latest`).
 
@@ -58,6 +58,10 @@ This is a **Model Context Protocol (MCP) server** that wraps Google Gemini's API
 - TypeScript strict mode (`verbatimModuleSyntax`, `noUncheckedIndexedAccess`, `noFallthroughCasesInSwitch`), target ES2022, module NodeNext
 - Output to `dist/`, source in `src/`
 - Executable as CLI via shebang (`#!/usr/bin/env node`)
+
+## Code Style
+
+Biome enforces: single quotes, trailing commas, 2-space indent, 120 char line width. Run `npm run lint:fix` to auto-format.
 
 ## Gotchas
 
