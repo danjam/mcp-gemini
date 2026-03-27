@@ -4,7 +4,7 @@ import { GoogleGenAI } from '@google/genai';
 
 import { createHandlers } from './handlers.js';
 import { tools } from './tools.js';
-import type { MCPRequest, MCPResponse, RequestId } from './types.js';
+import type { MCPRequest, MCPResponse, RequestId, ToolName } from './types.js';
 
 const JSONRPC_METHOD_NOT_FOUND = -32601;
 const JSONRPC_PARSE_ERROR = -32700;
@@ -29,6 +29,10 @@ function textReply(id: RequestId, text: string): void {
   reply(id, { content: [{ type: 'text', text }] });
 }
 
+function errorReply(id: RequestId, text: string): void {
+  reply(id, { content: [{ type: 'text', text }], isError: true });
+}
+
 function error(id: RequestId, code: number, message: string): void {
   send({ jsonrpc: '2.0', id, error: { code, message } });
 }
@@ -36,20 +40,20 @@ function error(id: RequestId, code: number, message: string): void {
 const handlers = createHandlers(genAI);
 
 async function handleToolCall(id: RequestId, name: string, args: Record<string, unknown>): Promise<void> {
-  const handler = handlers[name];
-  if (!handler) {
+  if (!(name in handlers)) {
     error(id, JSONRPC_METHOD_NOT_FOUND, `Unknown tool: ${name}`);
     return;
   }
+  const handler = handlers[name as ToolName];
   try {
     const result = await handler(args);
     if (result.ok) {
       textReply(id, result.text);
     } else {
-      reply(id, { content: [{ type: 'text', text: result.message }], isError: true });
+      errorReply(id, result.message);
     }
   } catch (e) {
-    reply(id, { content: [{ type: 'text', text: e instanceof Error ? e.message : 'Internal error' }], isError: true });
+    errorReply(id, e instanceof Error ? e.message : 'Internal error');
   }
 }
 
