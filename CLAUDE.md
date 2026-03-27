@@ -37,18 +37,20 @@ printf '{"jsonrpc":"2.0","id":1,"method":"initialize"}\n{"jsonrpc":"2.0","id":2,
 This is a **Model Context Protocol (MCP) server** that wraps Google Gemini's API. It communicates over **stdin/stdout using JSON-RPC 2.0** — there is no HTTP server.
 
 **Source files:**
-- `src/index.ts` — Entrypoint: I/O helpers (`send`, `reply`, `textReply`, `error`), request dispatch, readline listener
+- `src/index.ts` — Entrypoint: I/O helpers (`send`, `reply`, `textReply`, `errorReply`, `error`), request dispatch, readline listener
 - `src/handlers.ts` — `createHandlers()` factory returning a handler map; individual tool handler functions
 - `src/tools.ts` — Tool schema definitions (static JSON Schema data for MCP `tools/list`)
 - `src/conversations.ts` — Conversation store with TTL pruning (30min expiry, max 100 conversations)
 - `src/models.ts` — Model lists, defaults, `GEMINI_DEFAULT_MODEL` env var override
-- `src/types.ts` — All type definitions: `RequestId`, `ToolResult`, `ToolHandler`, tool arg interfaces, MCP interfaces
+- `src/types.ts` — All type definitions: `RequestId`, `ToolName`, `ToolResult`, `ToolHandler`, tool arg interfaces, MCP interfaces (`MCPToolAnnotations`, `MCPToolDefinition`, `MCPRequest`, `MCPResponse`)
 
 **Request flow:** stdin line → JSON parse → `handleRequest` dispatches by MCP method (`initialize`, `tools/list`, `tools/call`) → `handleToolCall` looks up handler in map → handler returns `ToolResult` → dispatch maps result to JSON-RPC response on stdout.
 
 **Tools exposed:** `generate_text`, `analyze_image`, `list_models`, `code_review`.
 
-**Conversation state:** Multi-turn conversations are tracked in-memory via `getHistory`/`saveHistory` in `conversations.ts`, keyed by `conversationId`. Conversations expire after 30 minutes of inactivity, with a hard cap of 100 concurrent conversations.
+**Conversation state:** Multi-turn conversations are tracked in-memory via `getHistory`/`appendTurn` in `conversations.ts`, keyed by `conversationId`. Conversations expire after 30 minutes of inactivity, with a hard cap of 100 concurrent conversations.
+
+**MCP features:** Tool annotations (`readOnlyHint`, `idempotentHint`, `openWorldHint`) and server `instructions` in the initialize response for deferred tool discovery.
 
 **Key dependency:** `@google/genai` — the official Google Generative AI SDK. Requires `GEMINI_API_KEY` env var.
 
@@ -66,4 +68,4 @@ Biome enforces: single quotes, trailing commas, 2-space indent, 120 char line wi
 ## Gotchas
 
 - **Import extensions**: NodeNext module resolution requires `.js` extensions in imports (e.g., `import { MCPRequest } from './types.js'`), even though source files are `.ts`.
-- **Tests are plain JS**: Test files in `test/` are `.js` and import from `../dist/`. Run `npm run build` first (or use `npm test` which builds automatically).
+- **Tests are plain JS**: Test files in `test/` are `.test.js` and import from `../dist/`. Run `npm run build` first (or use `npm test` which builds automatically).
