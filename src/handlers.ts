@@ -1,5 +1,5 @@
 import type { GenerateContentConfig, GoogleGenAI } from '@google/genai';
-import { getHistory, saveHistory } from './conversations.js';
+import { appendTurn, getHistory } from './conversations.js';
 import { DEFAULT_MODEL, MODELS } from './models.js';
 import type {
   AnalyzeImageArgs,
@@ -7,6 +7,7 @@ import type {
   ConversationMessage,
   GenerateTextArgs,
   ToolHandler,
+  ToolName,
   ToolResult,
 } from './types.js';
 
@@ -29,7 +30,7 @@ export function parseImageData(imageBase64: string): { mimeType: string; data: s
   return { mimeType: 'image/jpeg', data: imageBase64 };
 }
 
-export function createHandlers(genAI: GoogleGenAI): Record<string, ToolHandler> {
+export function createHandlers(genAI: GoogleGenAI): Record<ToolName, ToolHandler> {
   async function handleGenerateText(args: Record<string, unknown>): Promise<ToolResult> {
     const {
       prompt,
@@ -51,9 +52,8 @@ export function createHandlers(genAI: GoogleGenAI): Record<string, ToolHandler> 
       return fail('Invalid maxTokens: must be a positive integer');
     }
 
-    const userMessage: ConversationMessage = { role: 'user', parts: [{ text: prompt }] };
     const history = conversationId ? getHistory(conversationId) : [];
-    const contents = [...history, userMessage];
+    const contents: ConversationMessage[] = [...history, { role: 'user', parts: [{ text: prompt }] }];
 
     const config: GenerateContentConfig = {
       temperature,
@@ -80,7 +80,7 @@ export function createHandlers(genAI: GoogleGenAI): Record<string, ToolHandler> 
     const text = result.text ?? '';
 
     if (conversationId) {
-      saveHistory(conversationId, [...history, userMessage, { role: 'model', parts: [{ text }] }]);
+      appendTurn(conversationId, prompt, text);
     }
 
     return ok(text);
@@ -105,8 +105,8 @@ export function createHandlers(genAI: GoogleGenAI): Record<string, ToolHandler> 
     return ok(result.text ?? '');
   }
 
-  function handleListModels(): Promise<ToolResult> {
-    return Promise.resolve(ok(MODELS.join('\n')));
+  async function handleListModels(): Promise<ToolResult> {
+    return ok(MODELS.join('\n'));
   }
 
   async function handleCodeReview(args: Record<string, unknown>): Promise<ToolResult> {
