@@ -63,6 +63,8 @@ function handleRequest(req: MCPRequest): void {
         protocolVersion: '2024-11-05',
         serverInfo: { name: 'mcp-gemini', version: '1.0.0' },
         capabilities: { tools: {} },
+        instructions:
+          'Generate text, analyze images, and review code using Google Gemini. Use when working with the Gemini API for text generation, vision tasks, or code review.',
       });
       break;
     case 'tools/list':
