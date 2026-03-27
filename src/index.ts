@@ -6,6 +6,9 @@ import { createHandlers } from './handlers.js';
 import { tools } from './tools.js';
 import type { MCPRequest, MCPResponse, RequestId } from './types.js';
 
+const JSONRPC_METHOD_NOT_FOUND = -32601;
+const JSONRPC_PARSE_ERROR = -32700;
+
 const apiKey = process.env.GEMINI_API_KEY;
 if (!apiKey) {
   console.error('GEMINI_API_KEY environment variable is required');
@@ -35,7 +38,7 @@ const handlers = createHandlers(genAI);
 async function handleToolCall(id: RequestId, name: string, args: Record<string, unknown>): Promise<void> {
   const handler = handlers[name];
   if (!handler) {
-    error(id, -32601, `Unknown tool: ${name}`);
+    error(id, JSONRPC_METHOD_NOT_FOUND, `Unknown tool: ${name}`);
     return;
   }
   try {
@@ -72,7 +75,7 @@ function handleRequest(req: MCPRequest): void {
       reply(id, {});
       break;
     default:
-      error(id, -32601, 'Method not found');
+      error(id, JSONRPC_METHOD_NOT_FOUND, 'Method not found');
   }
 }
 
@@ -82,6 +85,6 @@ rl.on('line', function handleLine(line: string): void {
   try {
     handleRequest(JSON.parse(line));
   } catch {
-    send({ jsonrpc: '2.0', id: null, error: { code: -32700, message: 'Parse error' } });
+    send({ jsonrpc: '2.0', id: null, error: { code: JSONRPC_PARSE_ERROR, message: 'Parse error' } });
   }
 });
