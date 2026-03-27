@@ -46,6 +46,14 @@ export interface CodeReviewArgs {
   model?: string;
 }
 
+export interface MCPToolAnnotations {
+  title?: string;
+  readOnlyHint?: boolean;
+  destructiveHint?: boolean;
+  idempotentHint?: boolean;
+  openWorldHint?: boolean;
+}
+
 export interface MCPToolDefinition {
   name: string;
   description: string;
@@ -54,6 +62,7 @@ export interface MCPToolDefinition {
     properties: Record<string, unknown>;
     required?: string[];
   };
+  annotations?: MCPToolAnnotations;
 }
 
 export interface MCPRequest {

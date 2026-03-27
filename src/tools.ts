@@ -49,6 +49,7 @@ export const tools = [
       },
       required: ['prompt'],
     },
+    annotations: { readOnlyHint: true, openWorldHint: true },
   },
   {
     name: 'analyze_image',
@@ -63,11 +64,13 @@ export const tools = [
       },
       required: ['prompt'],
     },
+    annotations: { readOnlyHint: true, openWorldHint: true },
   },
   {
     name: 'list_models',
     description: 'List available Gemini models',
     inputSchema: { type: 'object', properties: {} },
+    annotations: { readOnlyHint: true, idempotentHint: true, openWorldHint: false },
   },
   {
     name: 'code_review',
@@ -81,5 +84,6 @@ export const tools = [
       },
       required: ['diff'],
     },
+    annotations: { readOnlyHint: true, openWorldHint: true },
   },
 ] satisfies MCPToolDefinition[];
