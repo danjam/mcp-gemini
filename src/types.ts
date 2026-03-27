@@ -1,9 +1,5 @@
 import type { SafetySetting } from '@google/genai';
 
-import type { MODELS } from './models.js';
-
-export type GeminiModel = (typeof MODELS)[number];
-
 export type RequestId = string | number;
 
 export interface ConversationMessage {
@@ -15,6 +11,8 @@ export interface Conversation {
   messages: ConversationMessage[];
   lastAccess: number;
 }
+
+export type ToolName = 'generate_text' | 'analyze_image' | 'list_models' | 'code_review';
 
 export type ToolResult = { ok: true; text: string } | { ok: false; message: string };
 
@@ -55,7 +53,7 @@ export interface MCPToolAnnotations {
 }
 
 export interface MCPToolDefinition {
-  name: string;
+  name: ToolName;
   description: string;
   inputSchema: {
     type: 'object';
