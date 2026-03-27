@@ -28,7 +28,7 @@ export function getHistory(conversationId: string): ConversationMessage[] {
   return store.get(conversationId)?.messages ?? [];
 }
 
-export function saveHistory(conversationId: string, messages: ConversationMessage[]): void {
+function saveHistory(conversationId: string, messages: ConversationMessage[]): void {
   store.set(conversationId, { messages, lastAccess: Date.now() });
   prune();
 }

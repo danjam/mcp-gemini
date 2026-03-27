@@ -2,7 +2,7 @@ import { describe, it, beforeEach } from 'node:test';
 import assert from 'node:assert/strict';
 
 import { parseImageData, createHandlers } from '../dist/handlers.js';
-import { getHistory, saveHistory, clearStore } from '../dist/conversations.js';
+import { appendTurn, getHistory, clearStore } from '../dist/conversations.js';
 
 // -- parseImageData --
 
@@ -74,32 +74,23 @@ describe('conversation store', () => {
     assert.deepStrictEqual(history, []);
   });
 
-  it('saves and retrieves conversation history', () => {
-    const messages = [{ role: 'user', parts: [{ text: 'hello' }] }];
-    saveHistory('conv1', messages);
+  it('saves and retrieves conversation via appendTurn', () => {
+    appendTurn('conv1', 'hello', 'hi there');
     const history = getHistory('conv1');
-    assert.deepStrictEqual(history, messages);
+    assert.deepStrictEqual(history, [
+      { role: 'user', parts: [{ text: 'hello' }] },
+      { role: 'model', parts: [{ text: 'hi there' }] },
+    ]);
   });
 
-  it('overwrites history on subsequent saves', () => {
-    saveHistory('conv1', [{ role: 'user', parts: [{ text: 'first' }] }]);
-    const updated = [
-      { role: 'user', parts: [{ text: 'first' }] },
-      { role: 'model', parts: [{ text: 'reply' }] },
-    ];
-    saveHistory('conv1', updated);
-    assert.deepStrictEqual(getHistory('conv1'), updated);
-  });
-
-  it('prunes expired conversations', () => {
-    // Manually inject an expired entry by saving then backdating
-    saveHistory('old', [{ role: 'user', parts: [{ text: 'old' }] }]);
-    saveHistory('new', [{ role: 'user', parts: [{ text: 'new' }] }]);
-
-    // Backdate 'old' by accessing internals via re-save with stale timestamp
-    // Since we can't directly manipulate lastAccess, we test that fresh entries survive
-    // and rely on TTL working via the implementation
-    const history = getHistory('new');
-    assert.deepStrictEqual(history, [{ role: 'user', parts: [{ text: 'new' }] }]);
+  it('appends to existing conversation', () => {
+    appendTurn('conv1', 'hello', 'hi there');
+    appendTurn('conv1', 'how are you?', 'fine thanks');
+    assert.deepStrictEqual(getHistory('conv1'), [
+      { role: 'user', parts: [{ text: 'hello' }] },
+      { role: 'model', parts: [{ text: 'hi there' }] },
+      { role: 'user', parts: [{ text: 'how are you?' }] },
+      { role: 'model', parts: [{ text: 'fine thanks' }] },
+    ]);
   });
 });
