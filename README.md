@@ -135,6 +135,7 @@ Tool: `code_review`
 | `diff` | string | Yes | The code diff or code to review |
 | `context` | string | No | Focus areas or additional context (e.g. "focus on security") |
 | `model` | string | No | Which model to use |
+| `maxTokens` | number | No | Limit the response length. Default: 4096 |
 
 **Note:** Use `list_models` to see available models, or pass any model name directly. Pro models aren't available on the free tier — if you see a quota error, switch to a Flash model or upgrade your plan.
 
