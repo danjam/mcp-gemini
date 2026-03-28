@@ -81,6 +81,7 @@ export const tools = [
         diff: { type: 'string', description: 'The code diff or code to review' },
         context: { type: 'string', description: 'Optional context or focus areas (e.g. "focus on security")' },
         model: modelSchemaProperty,
+        maxTokens: { type: 'number', description: 'Max output tokens', default: 4096 },
       },
       required: ['diff'],
     },

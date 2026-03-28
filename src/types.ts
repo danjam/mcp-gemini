@@ -42,6 +42,7 @@ export interface CodeReviewArgs {
   diff: string;
   context?: string;
   model?: string;
+  maxTokens?: number;
 }
 
 export interface MCPToolAnnotations {

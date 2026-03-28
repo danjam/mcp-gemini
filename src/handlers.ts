@@ -110,7 +110,7 @@ export function createHandlers(genAI: GoogleGenAI): Record<ToolName, ToolHandler
   }
 
   async function handleCodeReview(args: Record<string, unknown>): Promise<ToolResult> {
-    const { diff, context, model = DEFAULT_MODEL } = args as unknown as CodeReviewArgs;
+    const { diff, context, model = DEFAULT_MODEL, maxTokens = 4096 } = args as unknown as CodeReviewArgs;
 
     const baseInstruction =
       'You are an expert code reviewer. Review the following diff for bugs, style issues, security concerns, and potential improvements. Be concise and actionable.';
@@ -121,7 +121,7 @@ export function createHandlers(genAI: GoogleGenAI): Record<ToolName, ToolHandler
       contents: [{ role: 'user', parts: [{ text: diff }] }],
       config: {
         temperature: 0.3,
-        maxOutputTokens: 4096,
+        maxOutputTokens: maxTokens,
         systemInstruction: { parts: [{ text: systemInstruction }] },
       },
     });
