@@ -64,7 +64,7 @@ function handleRequest(req: MCPRequest): void {
   switch (req.method) {
     case 'initialize':
       reply(id, {
-        protocolVersion: '2025-06-18',
+        protocolVersion: '2025-11-25',
         serverInfo: { name: 'mcp-gemini', version: '1.0.0' },
         capabilities: { tools: {} },
         instructions:
